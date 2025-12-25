@@ -12,42 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.text.style.TextAlign
 
 data class ContentLine(
+    val id : Long = 0,
     val siteWeb : String,
     val identifiant : String,
     val group : String
-)
-
-val mockContentLines = listOf(
-    ContentLine("github.com", "user_alpha_01", "Developers"),
-    ContentLine("stackoverflow.com", "dev_expert_99", "Community"),
-    ContentLine("aws.amazon.com", "admin_root_prod", "Infrastructure"),
-    ContentLine("gitlab.com", "ci_runner_04", "DevOps"),
-    ContentLine("coursera.org", "student_math_l3", "Education"),
-    ContentLine("linkedin.com", "recruiter_it_02", "HR"),
-    ContentLine("bitbucket.org", "repo_manager_x", "Developers"),
-    ContentLine("medium.com", "writer_tech_blog", "Content"),
-    ContentLine("docker.com", "registry_puller", "Infrastructure"),
-    ContentLine("reddit.com", "math_moderator", "Community"),
-    ContentLine("netflix.com", "famille_durand", "Streaming"),
-    ContentLine("spotify.com", "music_lover_92", "Entertainment"),
-    ContentLine("disneyplus.com", "kids_account", "Streaming"),
-    ContentLine("amazon.fr", "prime_member_01", "Shopping"),
-    ContentLine("leboncoin.fr", "vendeur_du_31", "Shopping"),
-    ContentLine("revolut.com", "fintech_user", "Finance"),
-    ContentLine("binance.com", "crypto_trader_x", "Finance"),
-    ContentLine("paypal.com", "ecom_buyer", "Finance"),
-    ContentLine("discord.com", "gamer_tag_pro", "Social"),
-    ContentLine("twitter.com", "news_watcher", "Social"),
-    ContentLine("instagram.com", "photo_fanatic", "Social"),
-    ContentLine("steampowered.com", "valve_fan_88", "Gaming"),
-    ContentLine("epicgames.com", "fortnite_player", "Gaming"),
-    ContentLine("nintendo.com", "switch_user_jp", "Gaming"),
-    ContentLine("apple.com", "icloud_storage", "Cloud"),
-    ContentLine("dropbox.com", "file_sync_pro", "Cloud"),
-    ContentLine("notion.so", "productivity_guru", "Work"),
-    ContentLine("slack.com", "workspace_admin", "Work"),
-    ContentLine("zoom.us", "meeting_host_01", "Work"),
-    ContentLine("protonmail.com", "privacy_first", "Security")
 )
 
 @Composable
@@ -103,9 +71,9 @@ fun ContentLineDisplayPreview(){
     VaultFamilyTheme {
         ContentLineDisplay(
             ContentLine(
-                "google.com/login",
-                "example@gmail.com",
-                "self"
+                siteWeb = "google.com/login",
+                identifiant = "example@gmail.com",
+                group = "self"
             )
         )
     }
