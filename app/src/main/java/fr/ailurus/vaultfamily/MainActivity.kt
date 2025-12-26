@@ -1,12 +1,13 @@
-@file:Suppress("SpellCheckingInspection")
 
 package fr.ailurus.vaultfamily
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,7 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
-
+import androidx.compose.foundation.combinedClickable
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
 val fakeVault = FakeVaultRepository()
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContentList(
     vault: FakeVaultRepository,
@@ -97,7 +99,10 @@ fun ContentList(
             key = { it.id }
         ) { line ->
             Box(
-                modifier  = Modifier.clickable { onItemClick(line) }
+                modifier  = Modifier.combinedClickable(
+                    onClick = {  },
+                    onLongClick = { onItemClick(line) }
+                )
             ){
                ContentLineDisplay(line)
             }
