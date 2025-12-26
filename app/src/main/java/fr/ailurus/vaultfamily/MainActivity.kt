@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,7 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
-import androidx.compose.foundation.combinedClickable
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +60,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         if (showAddDialog){
-                            AddEntryDialog(
+                            EditEntryDialog(
                                 onDismissRequest = {
                                     showAddDialog = false
                                     editEntry = ContentLine()
@@ -71,14 +70,36 @@ class MainActivity : ComponentActivity() {
                                     showAddDialog = false
                                     editEntry = ContentLine()
                                 },
+                                onDelete = { oldEntry ->
+                                    fakeVault.deleteEntry(oldEntry)
+                                    showAddDialog = false
+                                    editEntry = ContentLine()
+                                },
                                 editEntry = editEntry
                             )
                         }
                     }
                 }
+
+                addMockEntries()
             }
         }
     }
+}
+
+fun addMockEntries(){
+    fakeVault.saveEntry(ContentLine(
+        siteWeb = "google.com",
+        identifiant = "ailurus@gmail.com",
+        password = "toto",
+        group = "self"
+    ))
+    fakeVault.saveEntry(ContentLine(
+        siteWeb = "amazon.fr",
+        identifiant = "redhood@yahoo.fr",
+        password = "tete",
+        group = "family"
+    ))
 }
 
 val fakeVault = FakeVaultRepository()
@@ -100,7 +121,7 @@ fun ContentList(
         ) { line ->
             Box(
                 modifier  = Modifier.combinedClickable(
-                    onClick = {  },
+                    onClick = { },
                     onLongClick = { onItemClick(line) }
                 )
             ){
