@@ -19,6 +19,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
@@ -29,10 +32,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             VaultFamilyTheme {
+
+                var showAddDialog by remember { mutableStateOf(false) }
+
                 Scaffold (
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { addMockContent() }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
+                        FloatingActionButton(
+                            onClick = { showAddDialog = true }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Ajouter")
                         }
                     }
                 ){ innerPadding ->
@@ -41,6 +49,16 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                     ) {
                         ContentList(fakeVault)
+
+                        if (showAddDialog){
+                            AddEntryDialog(
+                                onDismissRequest = { showAddDialog = false },
+                                onConfirmation = { newEntry ->
+                                    fakeVault.saveEntry(newEntry)
+                                    showAddDialog = false
+                                }
+                            )
+                        }
                     }
                 }
             }
