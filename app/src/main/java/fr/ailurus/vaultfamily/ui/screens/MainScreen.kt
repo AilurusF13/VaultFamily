@@ -20,117 +20,86 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import fr.ailurus.vaultfamily.data.model.Entry
-import fr.ailurus.vaultfamily.data.repository.FakeVaultRepository
 import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
 import fr.ailurus.vaultfamily.ui.components.EntryDisplay
-import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
+import fr.ailurus.vaultfamily.ui.viewmodel.VaultViewModel
 
 @Composable
-fun MainScreen() {
-        var showAddDialog by remember { mutableStateOf(false) }
-        var editEntry by remember { mutableStateOf(Entry())}
+fun MainScreen(viewModel: VaultViewModel) {
+    var showAddDialog by remember { mutableStateOf(false) }
+    var editEntry by remember { mutableStateOf(Entry())}
 
-        Scaffold (
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true }
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Ajouter")
+    val uiState by viewModel.uiState.collectAsState()
+    val entries = uiState.entries
+
+    Scaffold (
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    showAddDialog = true
+                    editEntry = Entry() // Adjonction donc on a un objet vide
                 }
-            }
-        ){ innerPadding ->
-            Surface(
-                modifier = Modifier
-                    .padding(innerPadding)
             ) {
-                EntriesDisplay(
-                    fakeVault,
-                    onItemClick = { entry ->
-                        editEntry = entry
-                        showAddDialog = true
-                    }
-                )
-
-                if (showAddDialog){
-                    EditEntryDialog(
-                        onDismissRequest = {
-                            showAddDialog = false
-                            editEntry = Entry()
-                        },
-                        onConfirmation = { newEntry ->
-                            fakeVault.saveEntry(newEntry)
-                            showAddDialog = false
-                            editEntry = Entry()
-                        },
-                        onDelete = { oldEntry ->
-                            fakeVault.deleteEntry(oldEntry)
-                            showAddDialog = false
-                            editEntry = Entry()
-                        },
-                        editEntry = editEntry
-                    )
-                }
+                Icon(Icons.Default.Add, contentDescription = "Ajouter")
             }
         }
-        addMockEntries()
-}
+    ){ innerPadding ->
+        Surface(
+            modifier = Modifier
+                .padding(innerPadding)
+        ) {
+            EntriesDisplay(
+                entries = entries,
+                onItemClick = {}, // TODO(action simple de click)
+                onItemLongClick = { entry ->
+                    editEntry = entry
+                    showAddDialog = true
+                }
+            )
 
-
-fun addMockEntries(){
-    fakeVault.saveEntry(
-        Entry(
-            siteWeb = "google.com",
-            identifiant = "ailurus@gmail.com",
-            password = "toto",
-            group = "self"
-        )
-    )
-    fakeVault.saveEntry(
-        Entry(
-            siteWeb = "amazon.fr",
-            identifiant = "redhood@yahoo.fr",
-            password = "tete",
-            group = "family"
-        )
-    )
-}
-
-
-val fakeVault = FakeVaultRepository()
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun EntriesDisplay(
-    vault: FakeVaultRepository,
-    onItemClick: (Entry) -> Unit = {}
-) {
-
-    val entriesState by vault.getAllEntries().collectAsState(initial = emptyList())
-    LazyColumn (
-        modifier = Modifier.fillMaxSize()
-    ){
-        items(
-            items = entriesState,
-            key = { it.id }
-        ) { entry ->
-            Box(
-                modifier  = Modifier.combinedClickable(
-                    onClick = { },
-                    onLongClick = { onItemClick(entry) }
+            if (showAddDialog){
+                EditEntryDialog(
+                    onDismissRequest = {
+                        showAddDialog = false
+                    },
+                    onConfirmation = { newEntry ->
+                        viewModel.saveEntry(newEntry)
+                        showAddDialog = false
+                    },
+                    onDelete = { oldEntry ->
+                        viewModel.deleteEntry(oldEntry)
+                        showAddDialog = false
+                    },
+                    editEntry = editEntry
                 )
-            ){
-                EntryDisplay(entry)
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EntriesDisplayPreview() {
-    VaultFamilyTheme {
-        EntriesDisplay(fakeVault)
+fun EntriesDisplay(
+    entries: List<Entry>,
+    onItemClick: (Entry) -> Unit = {},
+    onItemLongClick: (Entry) -> Unit = {}
+) {
+    LazyColumn (
+        modifier = Modifier.fillMaxSize()
+    ){
+        items(
+            items = entries,
+            key = { it.id }
+        ) { entry ->
+            Box(
+                modifier  = Modifier.combinedClickable(
+                    onClick = { },
+                    onLongClick = { onItemLongClick(entry) }
+                )
+            ){
+                EntryDisplay(entry)
+            }
+        }
     }
 }

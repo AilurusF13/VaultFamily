@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class VaultUiState(
     val entries: List<Entry> = emptyList(),
@@ -51,6 +52,19 @@ class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
         started = SharingStarted.WhileSubscribed(1), // Le Flow reste actif 1s après que l'UI ne l'écoute plus
         initialValue = VaultUiState() // État initial pendant que le Flow se met en place
     )
+
+    // sauvegérder et supprimer les entrées
+    fun saveEntry(entry: Entry){
+        viewModelScope.launch {
+            repository.saveEntry(entry)
+        }
+    }
+
+    fun deleteEntry(entry: Entry){
+        viewModelScope.launch {
+            repository.deleteEntry(entry)
+        }
+    }
 
     // Setters des filtres
     fun onSearchQueryChange(newQuery: String) {
