@@ -26,16 +26,18 @@ import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 @Composable
 fun AddEntryDialog(
     onDismissRequest: () -> Unit,
-    onConfirmation: (ContentLine) -> Unit
+    onConfirmation: (ContentLine) -> Unit,
+    editEntry: ContentLine,
 ) {
-    var siteWeb by remember { mutableStateOf("") }
-    var identifiant by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var siteWeb by remember { mutableStateOf(editEntry.siteWeb) }
+    var identifiant by remember { mutableStateOf(editEntry.identifiant) }
+    var password by remember { mutableStateOf(editEntry.password) }
 
-    val defaultGroup = "self"
-    var group by remember { mutableStateOf(defaultGroup)}
+    var group by remember { mutableStateOf(editEntry.group )}
 
     var groupExtended by remember { mutableStateOf(false) }
+
+    val defaultGroup = "self"
 
     AlertDialog(
         onDismissRequest = { onDismissRequest() },
@@ -101,6 +103,7 @@ fun AddEntryDialog(
             Button(
                 onClick = {
                     val newEntry = ContentLine(
+                        id = editEntry.id,
                         siteWeb = siteWeb,
                         identifiant = identifiant,
                         group = group,
@@ -129,6 +132,8 @@ fun AddEntryDialog(
 @Composable
 fun AddEntryDialogPreview() {
     VaultFamilyTheme {
-        AddEntryDialog({}, {})
+        AddEntryDialog(onDismissRequest =  {}, onConfirmation = {}, editEntry = ContentLine(
+            0, "google.com", "franck", "famille", "pswd"
+        ))
     }
 }

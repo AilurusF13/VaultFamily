@@ -13,9 +13,9 @@ import androidx.compose.ui.text.style.TextAlign
 
 data class ContentLine(
     val id : Long = 0,
-    val siteWeb : String,
-    val identifiant : String,
-    val group : String,
+    val siteWeb : String = "",
+    val identifiant : String = "",
+    val group : String = "self",
     val password : String = ""
 )
 

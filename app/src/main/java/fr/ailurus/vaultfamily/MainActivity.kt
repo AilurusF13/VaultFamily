@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +36,7 @@ class MainActivity : ComponentActivity() {
             VaultFamilyTheme {
 
                 var showAddDialog by remember { mutableStateOf(false) }
+                var editEntry by remember { mutableStateOf(ContentLine())}
 
                 Scaffold (
                     floatingActionButton = {
@@ -48,15 +51,26 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(innerPadding)
                     ) {
-                        ContentList(fakeVault)
+                        ContentList(
+                            fakeVault,
+                            onItemClick = { entry ->
+                                editEntry = entry
+                                showAddDialog = true
+                            }
+                        )
 
                         if (showAddDialog){
                             AddEntryDialog(
-                                onDismissRequest = { showAddDialog = false },
+                                onDismissRequest = {
+                                    showAddDialog = false
+                                    editEntry = ContentLine()
+                                },
                                 onConfirmation = { newEntry ->
                                     fakeVault.saveEntry(newEntry)
                                     showAddDialog = false
-                                }
+                                    editEntry = ContentLine()
+                                },
+                                editEntry = editEntry
                             )
                         }
                     }
@@ -69,7 +83,10 @@ class MainActivity : ComponentActivity() {
 val fakeVault = FakeVaultRepository()
 
 @Composable
-fun ContentList(vault: FakeVaultRepository) {
+fun ContentList(
+    vault: FakeVaultRepository,
+    onItemClick: (ContentLine) -> Unit = {}
+) {
 
     val entriesState by vault.getAllEntries().collectAsState(initial = emptyList())
     LazyColumn (
@@ -79,7 +96,11 @@ fun ContentList(vault: FakeVaultRepository) {
             items = entriesState,
             key = { it.id }
         ) { line ->
-            ContentLineDisplay(line)
+            Box(
+                modifier  = Modifier.clickable { onItemClick(line) }
+            ){
+               ContentLineDisplay(line)
+            }
         }
     }
 }
