@@ -1,4 +1,5 @@
-package fr.ailurus.vaultfamily
+package fr.ailurus.vaultfamily.ui.components
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
@@ -10,24 +11,17 @@ import androidx.compose.ui.Modifier
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.text.style.TextAlign
-
-data class ContentLine(
-    val id : Long = 0,
-    val siteWeb : String = "",
-    val identifiant : String = "",
-    val group : String = "self",
-    val password : String = ""
-)
+import fr.ailurus.vaultfamily.data.model.Entry
 
 @Composable
-fun ContentLineDisplay(cl: ContentLine) {
+fun EntryDisplay(entry: Entry) {
     Card (
         modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
     ) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceAround ,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -35,7 +29,7 @@ fun ContentLineDisplay(cl: ContentLine) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = cl.siteWeb[0].uppercase(),
+                    text = entry.siteWeb[0].uppercase(),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -44,12 +38,12 @@ fun ContentLineDisplay(cl: ContentLine) {
                 modifier = Modifier.padding(16.dp),
             ) {
                 Text(
-                    text = cl.siteWeb,
+                    text = entry.siteWeb,
                     textAlign = TextAlign.Left
                 )
 
                 Text(
-                    text = cl.identifiant,
+                    text = entry.identifiant,
                     textAlign = TextAlign.Left
                 )
             }
@@ -58,7 +52,7 @@ fun ContentLineDisplay(cl: ContentLine) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = cl.group,
+                    text = entry.group,
                     textAlign = TextAlign.Center
                 )
             }
@@ -68,10 +62,10 @@ fun ContentLineDisplay(cl: ContentLine) {
 
 @Preview(showBackground = true)
 @Composable
-fun ContentLineDisplayPreview(){
+fun EntryDisplayPreview(){
     VaultFamilyTheme {
-        ContentLineDisplay(
-            ContentLine(
+        EntryDisplay(
+            Entry(
                 siteWeb = "google.com/login",
                 identifiant = "example@gmail.com",
                 group = "self"

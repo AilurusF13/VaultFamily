@@ -1,4 +1,4 @@
-package fr.ailurus.vaultfamily
+package fr.ailurus.vaultfamily.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,14 +27,15 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
+import fr.ailurus.vaultfamily.data.model.Entry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditEntryDialog(
     onDismissRequest: () -> Unit,
-    onConfirmation: (ContentLine) -> Unit,
-    onDelete: (ContentLine) -> Unit,
-    editEntry: ContentLine,
+    onConfirmation: (Entry) -> Unit,
+    onDelete: (Entry) -> Unit,
+    editEntry: Entry,
 ) {
     var siteWeb by remember { mutableStateOf(editEntry.siteWeb) }
     var identifiant by remember { mutableStateOf(editEntry.identifiant) }
@@ -188,8 +189,9 @@ fun EditEntryDialog(
 @Composable
 fun EditEntryDialogPreview() {
     VaultFamilyTheme {
-        EditEntryDialog(onDismissRequest =  {}, onConfirmation = {}, onDelete = {}, editEntry = ContentLine(
+        EditEntryDialog(onDismissRequest =  {}, onConfirmation = {}, onDelete = {}, editEntry = Entry(
             100, "google.com", "franck", "famille", "pswd"
-        ))
+        )
+        )
     }
 }

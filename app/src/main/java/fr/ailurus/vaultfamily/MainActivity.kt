@@ -26,6 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import fr.ailurus.vaultfamily.data.model.Entry
+import fr.ailurus.vaultfamily.data.repository.FakeVaultRepository
+import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
+import fr.ailurus.vaultfamily.ui.components.EntryDisplay
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,7 +40,7 @@ class MainActivity : ComponentActivity() {
             VaultFamilyTheme {
 
                 var showAddDialog by remember { mutableStateOf(false) }
-                var editEntry by remember { mutableStateOf(ContentLine())}
+                var editEntry by remember { mutableStateOf(Entry())}
 
                 Scaffold (
                     floatingActionButton = {
@@ -51,7 +55,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(innerPadding)
                     ) {
-                        ContentList(
+                        EntriesDisplay(
                             fakeVault,
                             onItemClick = { entry ->
                                 editEntry = entry
@@ -63,17 +67,17 @@ class MainActivity : ComponentActivity() {
                             EditEntryDialog(
                                 onDismissRequest = {
                                     showAddDialog = false
-                                    editEntry = ContentLine()
+                                    editEntry = Entry()
                                 },
                                 onConfirmation = { newEntry ->
                                     fakeVault.saveEntry(newEntry)
                                     showAddDialog = false
-                                    editEntry = ContentLine()
+                                    editEntry = Entry()
                                 },
                                 onDelete = { oldEntry ->
                                     fakeVault.deleteEntry(oldEntry)
                                     showAddDialog = false
-                                    editEntry = ContentLine()
+                                    editEntry = Entry()
                                 },
                                 editEntry = editEntry
                             )
@@ -88,27 +92,31 @@ class MainActivity : ComponentActivity() {
 }
 
 fun addMockEntries(){
-    fakeVault.saveEntry(ContentLine(
-        siteWeb = "google.com",
-        identifiant = "ailurus@gmail.com",
-        password = "toto",
-        group = "self"
-    ))
-    fakeVault.saveEntry(ContentLine(
-        siteWeb = "amazon.fr",
-        identifiant = "redhood@yahoo.fr",
-        password = "tete",
-        group = "family"
-    ))
+    fakeVault.saveEntry(
+        Entry(
+            siteWeb = "google.com",
+            identifiant = "ailurus@gmail.com",
+            password = "toto",
+            group = "self"
+        )
+    )
+    fakeVault.saveEntry(
+        Entry(
+            siteWeb = "amazon.fr",
+            identifiant = "redhood@yahoo.fr",
+            password = "tete",
+            group = "family"
+        )
+    )
 }
 
 val fakeVault = FakeVaultRepository()
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ContentList(
+fun EntriesDisplay(
     vault: FakeVaultRepository,
-    onItemClick: (ContentLine) -> Unit = {}
+    onItemClick: (Entry) -> Unit = {}
 ) {
 
     val entriesState by vault.getAllEntries().collectAsState(initial = emptyList())
@@ -118,14 +126,14 @@ fun ContentList(
         items(
             items = entriesState,
             key = { it.id }
-        ) { line ->
+        ) { entry ->
             Box(
                 modifier  = Modifier.combinedClickable(
                     onClick = { },
-                    onLongClick = { onItemClick(line) }
+                    onLongClick = { onItemClick(entry) }
                 )
             ){
-               ContentLineDisplay(line)
+                EntryDisplay(entry)
             }
         }
     }
@@ -133,8 +141,8 @@ fun ContentList(
 
 @Preview(showBackground = true)
 @Composable
-fun ContentListPreview() {
+fun EntriesDisplayPreview() {
     VaultFamilyTheme {
-        ContentList(fakeVault)
+        EntriesDisplay(fakeVault)
     }
 }
