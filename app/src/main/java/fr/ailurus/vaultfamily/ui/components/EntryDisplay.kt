@@ -29,7 +29,7 @@ fun EntryDisplay(entry: Entry) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = entry.siteWeb[0].uppercase(),
+                    text = entry.entrySite[0].uppercase(),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -38,12 +38,12 @@ fun EntryDisplay(entry: Entry) {
                 modifier = Modifier.padding(16.dp),
             ) {
                 Text(
-                    text = entry.siteWeb,
+                    text = entry.entrySite,
                     textAlign = TextAlign.Left
                 )
 
                 Text(
-                    text = entry.identifiant,
+                    text = entry.entryUser,
                     textAlign = TextAlign.Left
                 )
             }
@@ -52,7 +52,7 @@ fun EntryDisplay(entry: Entry) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = entry.group,
+                    text = "none temporary", // TODO recuperer le label
                     textAlign = TextAlign.Center
                 )
             }
@@ -66,9 +66,9 @@ fun EntryDisplayPreview(){
     VaultFamilyTheme {
         EntryDisplay(
             Entry(
-                siteWeb = "google.com/login",
-                identifiant = "example@gmail.com",
-                group = "self"
+                entrySite = "google.com/login",
+                entryUser = "example@gmail.com",
+                groupId = 0
             )
         )
     }

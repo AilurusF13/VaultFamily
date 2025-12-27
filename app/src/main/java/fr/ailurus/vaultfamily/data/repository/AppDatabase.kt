@@ -6,9 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.ailurus.vaultfamily.data.dao.EntryDao
-import net.sqlcipher.database.SupportFactory
 import fr.ailurus.vaultfamily.data.model.*
 import fr.ailurus.vaultfamily.data.dao.*
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
     entities = [
@@ -21,10 +21,10 @@ import fr.ailurus.vaultfamily.data.dao.*
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun EntryDao(): EntryDao
-    abstract fun EntrySecretDao(): EntrySecretDao
-    abstract fun GroupDao(): GroupDao
-    abstract fun GroupSecretDao(): GroupSecretDao
+    abstract fun entryDao(): EntryDao
+    abstract fun entrySecretDao(): EntrySecretDao
+    abstract fun groupDao(): GroupDao
+    abstract fun groupSecretDao(): GroupSecretDao
 
     companion object {
         @Volatile
@@ -32,17 +32,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getInstance(context: Context, passphrase: ByteArray): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val factory = SupportFactory(passphrase)
+                val factory = SupportOpenHelperFactory(passphrase)
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "secure-vaultfamily-db"
                 )
                     .openHelperFactory(factory)
-                    .addCallback(object : RoomDatabase.Callback() {
+                    .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             db.execSQL("INSERT INTO groups (groupName) VALUES ('Self')")
+                            db.execSQL("INSERT INTO groupsecret (groupId, groupKey) VALUES (1, 'key-self')")
                             // TODO inserer les données liées au group self
                         }
                     })

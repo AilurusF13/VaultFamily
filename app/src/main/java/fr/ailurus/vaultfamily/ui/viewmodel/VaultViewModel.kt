@@ -81,7 +81,12 @@ class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
             repository.deleteGroup(group)
         }
     }
-    
+
+    // recuepre groupe ave id
+    fun Long(id: Long): Group?{
+        return uiState.value.groups.find { it.groupId == id }
+    }
+
     // Setters des filtres
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery

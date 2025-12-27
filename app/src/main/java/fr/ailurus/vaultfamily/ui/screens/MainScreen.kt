@@ -21,7 +21,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
 import fr.ailurus.vaultfamily.data.model.Entry
 import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
 import fr.ailurus.vaultfamily.ui.components.EntryDisplay
@@ -102,15 +100,17 @@ fun MainScreen(viewModel: VaultViewModel) {
                 items(groups) { g ->
                     FilterChip(
                         onClick = {
-                            if (uiState.groupQuery == g) {
-                                viewModel.onGroupQueryChange("")
+                            if (uiState.groupQuery == g.groupId) {
+                                viewModel.onGroupQueryChange(0)
                             } else {
-                                viewModel.onGroupQueryChange(g)
+                                viewModel.onGroupQueryChange(g.groupId)
                             }
                         },
-                        selected = uiState.groupQuery == g,
-                        label = { Text(text = g) },
-                        leadingIcon = if (uiState.groupQuery == g) {
+                        selected = uiState.groupQuery == g.groupId,
+                        label = {
+                            Text(text = g.groupName)
+                        },
+                        leadingIcon = if (uiState.groupQuery == g.groupId) {
                             {
                                 Icon(
                                     imageVector = Icons.Filled.Done,
@@ -137,8 +137,8 @@ fun MainScreen(viewModel: VaultViewModel) {
                     onDismissRequest = {
                         showAddDialog = false
                     },
-                    onConfirmation = { newEntry ->
-                        viewModel.saveEntry(newEntry)
+                    onConfirmation = { newEntry, password ->
+                        viewModel.saveEntry(newEntry, password)
                         showAddDialog = false
                     },
                     onDelete = { oldEntry ->
@@ -146,7 +146,7 @@ fun MainScreen(viewModel: VaultViewModel) {
                         showAddDialog = false
                     },
                     editEntry = editEntry,
-                    groups = groups
+                    groups = groups // de meme on recupere le group avec l id
                 )
             }
         }
@@ -175,7 +175,7 @@ fun EntriesDisplay(
         ){
             items(
                 items = entries,
-                key = { it.id }
+                key = { it.entryId }
             ) { entry ->
                 Box(
                     modifier  = Modifier.combinedClickable(

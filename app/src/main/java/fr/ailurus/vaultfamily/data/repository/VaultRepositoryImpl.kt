@@ -18,35 +18,35 @@ class VaultRepositoryImpl(
     // ENTRY EDITING
     override fun getAllEntries(): Flow<List<Entry>> {
         val database = db?: throw IllegalStateException("Database Locked")
-        return database.EntryDao().getAll()
+        return database.entryDao().getAll()
     }
 
     override suspend fun saveEntry(entry: Entry, secret: EntrySecret) {
         val database = db?: throw IllegalStateException("Database Locked")
         database.withTransaction {
-            val entryId = database.EntryDao().insert(entry)
+            val entryId = database.entryDao().insert(entry)
             val linkedSecret = secret.copy(entryId = entryId)
-            database.EntrySecretDao().insert(linkedSecret)
+            database.entrySecretDao().insert(linkedSecret)
         }
     }
 
     override suspend fun deleteEntry(entry: Entry) {
         val database = db?: throw IllegalStateException("Database Locked")
         database.withTransaction {
-            database.EntryDao().delete(entry)
+            database.entryDao().delete(entry)
         }
     }
 
     // FETCH SECRET ENTRY
     override suspend fun getSecret(entry: Entry): EntrySecret? {
         val database = db?: throw IllegalStateException("Database Locked")
-        return database.EntrySecretDao().findById(entry.entryId)
+        return database.entrySecretDao().findById(entry.entryId)
     }
 
     // GROUP EDITING
     override fun getAllGroups(): Flow<List<Group>> {
         val database = db?: throw IllegalStateException("Database Locked")
-        return database.GroupDao().getAll()
+        return database.groupDao().getAll()
     }
 
     override suspend fun saveGroup(
@@ -55,22 +55,22 @@ class VaultRepositoryImpl(
     ) {
         val database = db?: throw IllegalStateException("Database Locked")
         database.withTransaction {
-            val groupId = database.GroupDao().insert(group)
+            val groupId = database.groupDao().insert(group)
             val linkedSecret = secret.copy(groupId = groupId)
-            database.GroupSecretDao().insert(linkedSecret)
+            database.groupSecretDao().insert(linkedSecret)
         }
     }
 
     override suspend fun deleteGroup(group: Group) {
         val database = db?: throw IllegalStateException("Database Locked")
         database.withTransaction {
-            database.GroupDao().delete(group)
+            database.groupDao().delete(group)
         }
     }
 
     // FETCH SECRET GROUP
     override suspend fun getSecret(group: Group): GroupSecret? {
         val database = db?: throw IllegalStateException("Database Locked")
-        return database.GroupSecretDao().findById(group.groupId)
+        return database.groupSecretDao().findById(group.groupId)
     }
 }

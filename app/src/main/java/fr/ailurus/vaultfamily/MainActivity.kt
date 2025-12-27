@@ -1,5 +1,6 @@
 package fr.ailurus.vaultfamily
 
+import android.database.sqlite.SQLiteDatabase
 import fr.ailurus.vaultfamily.data.repository.VaultRepositoryImpl
 import fr.ailurus.vaultfamily.data.model.*
 import android.os.Bundle
@@ -10,11 +11,10 @@ import androidx.activity.viewModels
 import fr.ailurus.vaultfamily.ui.screens.MainScreen
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 import fr.ailurus.vaultfamily.ui.viewmodel.VaultViewModel
-import net.sqlcipher.database.SQLiteDatabase
 
 class MainActivity : ComponentActivity() {
 
-    // 1. CORRECTION : Initialisez le VRAI repository
+
     private val vaultRepository by lazy {
         VaultRepositoryImpl(applicationContext)
     }
@@ -26,9 +26,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Déverrouillage de la base de données (c'est le moment !)
-        // La passphrase doit être un tableau d'octets.
-        val passphrase = SQLiteDatabase.getBytes("votre-mot-de-passe-super-secret".toCharArray())
+        deleteDatabase("secure-vaultfamily-db")
+
+        val passwordChars = "password-personnel".toCharArray()
+        val passphrase = java.nio.charset.Charset.forName("UTF-8")
+            .encode(java.nio.CharBuffer.wrap(passwordChars))
+            .let { byteBuffer ->
+                val bytes = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(bytes)
+                bytes
+            }
+
+        System.loadLibrary("sqlcipher")
+
         vaultRepository.initializeDb(passphrase)
 
         enableEdgeToEdge()
@@ -56,7 +66,7 @@ class MainActivity : ComponentActivity() {
             entry = Entry(
                 entrySite = "google.com",
                 entryUser = "franck",
-                groupId = 0 // IMPORTANT: L'ID du groupe "self" (inséré lors de la création de la db)
+                groupId = 1 // IMPORTANT: L'ID du groupe "self" (inséré lors de la création de la db)
             ),
             // Le secret doit être un objet EntrySecret
             secret = EntrySecret(
@@ -68,7 +78,7 @@ class MainActivity : ComponentActivity() {
             entry = Entry(
                 entrySite = "amazon.fr",
                 entryUser = "ailurus",
-                groupId = 1 // IMPORTANT: L'ID du groupe "famille"
+                groupId = 2 // IMPORTANT: L'ID du groupe "famille"
             ),
             secret = EntrySecret(
                 encryptedPassword = "password-amazon".toByteArray()

@@ -6,12 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,36 +19,41 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
+import fr.ailurus.vaultfamily.data.model.Entry
+import fr.ailurus.vaultfamily.data.model.EntrySecret
+import fr.ailurus.vaultfamily.data.model.Group
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
-import androidx.compose.ui.Alignment
-import fr.ailurus.vaultfamily.data.model.Entry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditEntryDialog(
     onDismissRequest: () -> Unit,
-    onConfirmation: (Entry) -> Unit,
+    onConfirmation: (Entry, EntrySecret) -> Unit,
     onDelete: (Entry) -> Unit,
     editEntry: Entry,
-    groups: List<String>
+    groups: List<Group>
 ) {
-    var siteWeb by remember { mutableStateOf(editEntry.siteWeb) }
-    var identifiant by remember { mutableStateOf(editEntry.identifiant) }
-    var password by remember { mutableStateOf(editEntry.password) }
+    var siteWeb by remember { mutableStateOf(editEntry.entrySite) }
+    var identifiant by remember { mutableStateOf(editEntry.entryUser) }
+    var password by remember { mutableStateOf("") } // on entre le nouau mot de passe
 
-    var group by remember { mutableStateOf(editEntry.group )}
+    var groupId by remember { mutableStateOf(editEntry.groupId )}
+    if (groupId == 0L) {groupId =1L }
 
     var groupExtended by remember { mutableStateOf(false) }
 
-    val enableDeleteButton = (editEntry.id != 0L)
+    val enableDeleteButton = (editEntry.entryId != 0L)
     var enableDeleteDialog by remember { mutableStateOf(false) }
-    
+
+    fun Long?.toGroup() = groups.find { it.groupId == this } ?: Group(
+        -1, "Not Found"
+    )
+
     AlertDialog(
         onDismissRequest = { onDismissRequest() },
         title = {
@@ -93,7 +98,7 @@ fun EditEntryDialog(
                                 Icons.Default.Person,
                                 contentDescription = "groupe"
                             )
-                            Text(text = group)
+                            Text(text = groupId.toGroup().groupName)
                         }
                         DropdownMenu(
                             expanded = groupExtended,
@@ -101,9 +106,9 @@ fun EditEntryDialog(
                         ) {
                             for (g in groups){
                                 DropdownMenuItem(
-                                    text = { Text(text = g)},
+                                    text = { Text(text = g.groupName)},
                                     onClick = {
-                                        group = g
+                                        groupId = g.groupId
                                         groupExtended = false
                                     }
                                 )
@@ -111,8 +116,6 @@ fun EditEntryDialog(
                         }
                     }
                 }
-
-
             }
         },
         confirmButton = {
@@ -139,20 +142,24 @@ fun EditEntryDialog(
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        val newEntry = editEntry.copy(
-                            siteWeb = siteWeb,
-                            identifiant = identifiant,
-                            group = group,
-                            password = password
+                        val updatedEntry = editEntry.copy(
+                            entrySite = siteWeb,
+                            entryUser = identifiant,
+                            groupId = groupId
                         )
-                        onConfirmation(newEntry)
+                        val secret = EntrySecret(
+                            encryptedPassword = password.toByteArray()
+                        )
+
+                        // ACTION MANQUANTE :
+                        onConfirmation(updatedEntry, secret) // Ou viewModel.save(updatedEntry, secret)
+                        enableDeleteDialog = false
                     },
                     enabled = siteWeb.isNotBlank() && identifiant.isNotBlank()
                 ) {
                     Text(text = "Valider")
                 }
             }
-
         },
     )
     // On veut un boutton icon de supression
@@ -177,13 +184,13 @@ fun EditEntryDialog(
     }
 }
 
-@Preview
-@Composable
-fun EditEntryDialogPreview() {
-    VaultFamilyTheme {
-        EditEntryDialog(onDismissRequest =  {}, onConfirmation = {}, onDelete = {}, editEntry = Entry(
-            100, "google.com", "franck", "famille", "pswd"
-        ), groups = listOf("famille", "travail")
-        )
-    }
-}
+//@Preview
+//@Composable
+//fun EditEntryDialogPreview() {
+//    VaultFamilyTheme {
+//        EditEntryDialog(onDismissRequest =  {}, onConfirmation = {}, onDelete = {}, editEntry = Entry(
+//            100, "google.com", "franck", "famille", "pswd"
+//        ), groups = listOf("famille", "travail")
+//        )
+//    }
+//}
