@@ -1,14 +1,8 @@
 package fr.ailurus.vaultfamily.data.model
 
-import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.PrimaryKey
-import androidx.room.Query
 import androidx.room.ForeignKey
-import androidx.room.OnConflictStrategy
-
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "groupsecret",
@@ -32,25 +26,15 @@ data class GroupSecret (
 
         other as GroupSecret
 
+        if (groupId != other.groupId) return false
         if (!groupKey.contentEquals(other.groupKey)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return groupKey.contentHashCode()
+        var result = groupId.hashCode()
+        result = 31 * result + groupKey.contentHashCode()
+        return result
     }
-}
-
-@Dao
-interface GroupSecretDao{
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(groupSecret: GroupSecret): Long
-
-    @Query("SELECT * FROM groupsecret WHERE groupId = :searchQuery")
-    suspend fun findById(searchQuery: Long): GroupSecret?
-
-    @Delete
-    suspend fun delete(groupSecret: GroupSecret)
 }

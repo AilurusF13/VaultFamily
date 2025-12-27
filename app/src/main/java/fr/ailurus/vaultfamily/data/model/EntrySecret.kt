@@ -1,14 +1,8 @@
 package fr.ailurus.vaultfamily.data.model
 
-import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Insert
 import androidx.room.PrimaryKey
-import androidx.room.Query
-import androidx.room.OnConflictStrategy
-
 
 @Entity(
     tableName = "entrysecret",
@@ -24,8 +18,8 @@ import androidx.room.OnConflictStrategy
 data class EntrySecret (
     @PrimaryKey
     val entryId: Long,
-    val encryptedPassword: ByteArray,
-) { // Automatic overriden equals and hashCode
+    val encryptedPassword: ByteArray
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -43,16 +37,4 @@ data class EntrySecret (
         result = 31 * result + encryptedPassword.contentHashCode()
         return result
     }
-}
-
-@Dao
-interface EntrySecretDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entrySecret: EntrySecret): Long
-
-    @Query("SELECT * FROM entrysecret WHERE entryId = :searchQuery")
-    suspend fun findById(searchQuery: Long): EntrySecret?
-
-    @Delete
-    suspend fun delete(entrySecret: EntrySecret)
 }
