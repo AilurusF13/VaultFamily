@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
 )
 data class GroupSecret (
     @PrimaryKey
-    val groupId: Long,
+    val groupId: Long = 0,
     val groupKey: ByteArray
 ) {
     override fun equals(other: Any?): Boolean {

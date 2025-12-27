@@ -16,8 +16,8 @@ interface GroupDao {
     @Query("SELECT * FROM groups ORDER BY groupId ASC")
     fun getAll(): Flow<List<Group>>
 
-    @Query("SELECT * FROM groups WHERE groupId = :searchQuery")
-    suspend fun findById(searchQuery: Long): Group?
+//    @Query("SELECT * FROM groups WHERE groupId = :searchQuery")
+//    suspend fun findById(searchQuery: Long): Group?
 
     @Delete
     suspend fun delete(group: Group)

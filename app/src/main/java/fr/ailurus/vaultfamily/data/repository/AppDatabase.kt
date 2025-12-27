@@ -1,4 +1,55 @@
 package fr.ailurus.vaultfamily.data.repository
 
-class AppDatabase {
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
+import fr.ailurus.vaultfamily.data.dao.EntryDao
+import net.sqlcipher.database.SupportFactory
+import fr.ailurus.vaultfamily.data.model.*
+import fr.ailurus.vaultfamily.data.dao.*
+
+@Database(
+    entities = [
+        Entry::class,
+        EntrySecret::class,
+        Group::class,
+        GroupSecret::class
+    ],
+    version = 1
+)
+abstract class AppDatabase : RoomDatabase() {
+
+    abstract fun EntryDao(): EntryDao
+    abstract fun EntrySecretDao(): EntrySecretDao
+    abstract fun GroupDao(): GroupDao
+    abstract fun GroupSecretDao(): GroupSecretDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context, passphrase: ByteArray): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val factory = SupportFactory(passphrase)
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "secure-vaultfamily-db"
+                )
+                    .openHelperFactory(factory)
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            db.execSQL("INSERT INTO groups (groupName) VALUES ('Self')")
+                            // TODO inserer les données liées au group self
+                        }
+                    })
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }

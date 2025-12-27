@@ -16,8 +16,8 @@ interface EntryDao {
     @Query("SELECT * FROM entries ORDER BY entrySite ASC")
     fun getAll(): Flow<List<Entry>>
 
-    @Query("SELECT * FROM entries WHERE entryId = :searchQuery")
-    suspend fun findById(searchQuery: Long): Entry?
+//    @Query("SELECT * FROM entries WHERE entryId = :searchQuery")
+//    suspend fun findById(searchQuery: Long): Entry?
 
     @Delete
     suspend fun delete(entry: Entry)

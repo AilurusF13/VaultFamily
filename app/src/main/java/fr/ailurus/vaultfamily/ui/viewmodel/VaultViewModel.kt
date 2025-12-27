@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import fr.ailurus.vaultfamily.data.model.Entry
+import fr.ailurus.vaultfamily.data.model.*
 import fr.ailurus.vaultfamily.data.repository.VaultRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,77 +16,79 @@ import kotlinx.coroutines.launch
 
 data class VaultUiState(
     val entries: List<Entry> = emptyList(),
-    val groups: List<String> = emptyList(), // J utilise des string sur tous les elements du groupe en frontend mais c est probalblement moins pertinent plus tard
+    val groups: List<Group> = emptyList(),
     val searchQuery: String = "",
-    val groupQuery: String = ""
+    val groupQuery: Long = 0L
 )
 
 class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
 
-    // Les 'MutableStateFlow' pour les requêtes de recherche et de groupe
-    private val _groups = MutableStateFlow<List<String>>(listOf("self"))
+    // Les 'MutableStateFlow' pour les requêtes de 
     private val _searchQuery = MutableStateFlow("")
-    private val _groupQuery = MutableStateFlow("")
+    private val _groupQuery = MutableStateFlow(0L)
 
     // On expose les StateFlow directement à partir du combine
     val uiState: StateFlow<VaultUiState> = combine(
         repository.getAllEntries(), // On utilise directement le Flow du repository
-        _groups,
+        repository.getAllGroups(),
         _searchQuery,
         _groupQuery
-    ) { allEntries, groups, search, group ->
-        val filteredEntries = if (search.isBlank() && group.isBlank()) {
-            allEntries // Optimisation : pas de filtrage si les requêtes sont vides
+    ) { allEntries, allGroups, searchQuery, groupQuery ->
+        val filteredEntries = if (searchQuery.isBlank() && groupQuery == 0L) {
+            allEntries // pas de filtrage si les requêtes sont vides
         } else {
             allEntries.filter { entry ->
-                val matchesSearch = search.isBlank() || entry.siteWeb.contains(search, ignoreCase = true)
-                val matchesGroup = group.isBlank() || entry.group.equals(group, ignoreCase = true)
+                val matchesSearch = searchQuery.isBlank() || entry.entrySite.contains(searchQuery, ignoreCase = true)
+                val matchesGroup = groupQuery == 0L || entry.groupId == groupQuery
                 matchesSearch && matchesGroup
             }
         }
 
         VaultUiState(
             entries = filteredEntries,
-            groups = groups,
-            searchQuery = search,
-            groupQuery = group
+            groups = allGroups,
+            searchQuery = searchQuery,
+            groupQuery = groupQuery
         )
     }.stateIn( // On transforme le Flow résultant en un StateFlow
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(1), // Le Flow reste actif 1s après que l'UI ne l'écoute plus
+        started = SharingStarted.Lazily,
         initialValue = VaultUiState() // État initial pendant que le Flow se met en place
     )
 
     // sauvegérder et supprimer les entrées
-    fun saveEntry(entry: Entry){
+    fun saveEntry(entry: Entry, secret: EntrySecret){
         viewModelScope.launch {
-            repository.saveEntry(entry)
+            repository.saveEntry(entry, secret)
         }
     }
+
     fun deleteEntry(entry: Entry){
         viewModelScope.launch {
             repository.deleteEntry(entry)
         }
     }
 
+    // ajouter ou supprimer un groupe
+    fun saveGroup(group: Group, secret: GroupSecret){
+        viewModelScope.launch {
+            repository.saveGroup(group, secret)
+        }
+    }
+    
+    fun deleteGroup(group: Group){
+        viewModelScope.launch {
+            repository.deleteGroup(group)
+        }
+    }
+    
     // Setters des filtres
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
     }
-    fun onGroupQueryChange(newGroup: String) {
+    fun onGroupQueryChange(newGroup: Long) {
         _groupQuery.value = newGroup
     }
-
-    // ajouter ou supprimer un groupe
-    fun addGroup(group: String){
-        if (group !in _groups.value) {
-            _groups.value += group
-        }
-    }
-    fun deleteGroup(group: String){
-        _groups.value -= group
-    }
-
     companion object {
         fun Factory(repository: VaultRepository): ViewModelProvider.Factory = viewModelFactory {
             initializer {

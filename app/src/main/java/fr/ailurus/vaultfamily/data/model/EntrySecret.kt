@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
 )
 data class EntrySecret (
     @PrimaryKey
-    val entryId: Long,
+    val entryId: Long = 0,
     val encryptedPassword: ByteArray
 ) {
     override fun equals(other: Any?): Boolean {
