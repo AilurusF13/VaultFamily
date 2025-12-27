@@ -36,6 +36,7 @@ fun EditEntryDialog(
     onConfirmation: (Entry) -> Unit,
     onDelete: (Entry) -> Unit,
     editEntry: Entry,
+    groups: List<String>
 ) {
     var siteWeb by remember { mutableStateOf(editEntry.siteWeb) }
     var identifiant by remember { mutableStateOf(editEntry.identifiant) }
@@ -44,8 +45,6 @@ fun EditEntryDialog(
     var group by remember { mutableStateOf(editEntry.group )}
 
     var groupExtended by remember { mutableStateOf(false) }
-
-    val defaultGroup = "self"
 
     val enableDeleteButton = (editEntry.id != 0L)
     var enableDeleteDialog by remember { mutableStateOf(false) }
@@ -100,22 +99,15 @@ fun EditEntryDialog(
                             expanded = groupExtended,
                             onDismissRequest = {groupExtended = false}
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(text = defaultGroup)},
-                                onClick = {
-                                    group = defaultGroup
-                                    groupExtended = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(text = "famille")
-                                },
-                                onClick = {
-                                    group = "famille"
-                                    groupExtended = false
-                                }
-                            )
+                            for (g in groups){
+                                DropdownMenuItem(
+                                    text = { Text(text = g)},
+                                    onClick = {
+                                        group = g
+                                        groupExtended = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -191,7 +183,7 @@ fun EditEntryDialogPreview() {
     VaultFamilyTheme {
         EditEntryDialog(onDismissRequest =  {}, onConfirmation = {}, onDelete = {}, editEntry = Entry(
             100, "google.com", "franck", "famille", "pswd"
-        )
+        ), groups = listOf("famille", "travail")
         )
     }
 }

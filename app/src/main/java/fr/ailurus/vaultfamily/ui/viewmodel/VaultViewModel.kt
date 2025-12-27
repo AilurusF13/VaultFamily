@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class VaultUiState(
     val entries: List<Entry> = emptyList(),
+    val groups: List<String> = emptyList(), // J utilise des string sur tous les elements du groupe en frontend mais c est probalblement moins pertinent plus tard
     val searchQuery: String = "",
     val groupQuery: String = ""
 )
@@ -23,15 +24,17 @@ data class VaultUiState(
 class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
 
     // Les 'MutableStateFlow' pour les requêtes de recherche et de groupe
+    private val _groups = MutableStateFlow<List<String>>(listOf("self"))
     private val _searchQuery = MutableStateFlow("")
     private val _groupQuery = MutableStateFlow("")
 
     // On expose les StateFlow directement à partir du combine
     val uiState: StateFlow<VaultUiState> = combine(
         repository.getAllEntries(), // On utilise directement le Flow du repository
+        _groups,
         _searchQuery,
         _groupQuery
-    ) { allEntries, search, group ->
+    ) { allEntries, groups, search, group ->
         val filteredEntries = if (search.isBlank() && group.isBlank()) {
             allEntries // Optimisation : pas de filtrage si les requêtes sont vides
         } else {
@@ -44,6 +47,7 @@ class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
 
         VaultUiState(
             entries = filteredEntries,
+            groups = groups,
             searchQuery = search,
             groupQuery = group
         )
@@ -59,7 +63,6 @@ class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
             repository.saveEntry(entry)
         }
     }
-
     fun deleteEntry(entry: Entry){
         viewModelScope.launch {
             repository.deleteEntry(entry)
@@ -70,9 +73,18 @@ class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
     }
-
     fun onGroupQueryChange(newGroup: String) {
         _groupQuery.value = newGroup
+    }
+
+    // ajouter ou supprimer un groupe
+    fun addGroup(group: String){
+        if (group !in _groups.value) {
+            _groups.value += group
+        }
+    }
+    fun deleteGroup(group: String){
+        _groups.value -= group
     }
 
     companion object {
