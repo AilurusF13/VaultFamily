@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
     val DEBUG = false
 
     private val vaultRepository by lazy {
-        VaultRepositoryImpl(applicationContext)
+        VaultRepositoryImpl()
     }
 
     private val vaultViewModel: VaultViewModel by viewModels {
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
             System.loadLibrary("sqlcipher")
 
             // Ouverture DB (Lent - PBKDF2)
-            vaultRepository.initializeDb(passphrase)
+            vaultRepository.initializeDb(this@MainActivity, passphrase)
 
             // 3. DEBUG DATA : On insère uniquement une fois la DB prête
             // Doit être fait ici pour garantir l'ordre séquentiel
