@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package fr.ailurus.vaultfamily.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -34,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import fr.ailurus.vaultfamily.data.model.Entry
+import fr.ailurus.vaultfamily.data.model.*
 import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
 import fr.ailurus.vaultfamily.ui.components.EntryDisplay
 import fr.ailurus.vaultfamily.ui.viewmodel.VaultViewModel
@@ -126,6 +128,7 @@ fun MainScreen(viewModel: VaultViewModel) {
             }
             EntriesDisplay(
                 entries = entries,
+                groups = groups,
                 onItemClick = {}, // TODO(action simple de click)
                 onItemLongClick = { entry ->
                     editEntry = entry
@@ -159,6 +162,7 @@ fun MainScreen(viewModel: VaultViewModel) {
 @Composable
 fun EntriesDisplay(
     entries: List<Entry>,
+    groups: List<Group>,
     onItemClick: (Entry) -> Unit = {},
     onItemLongClick: (Entry) -> Unit = {}
 ) {
@@ -183,7 +187,7 @@ fun EntriesDisplay(
                         onLongClick = { onItemLongClick(entry) }
                     )
                 ){
-                    EntryDisplay(entry)
+                    EntryDisplay(entry, groups)
                 }
             }
         }

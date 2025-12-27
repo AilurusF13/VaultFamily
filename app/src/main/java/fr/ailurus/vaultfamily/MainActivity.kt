@@ -1,6 +1,5 @@
 package fr.ailurus.vaultfamily
 
-import android.database.sqlite.SQLiteDatabase
 import fr.ailurus.vaultfamily.data.repository.VaultRepositoryImpl
 import fr.ailurus.vaultfamily.data.model.*
 import android.os.Bundle
@@ -8,12 +7,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import fr.ailurus.vaultfamily.ui.screens.MainScreen
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 import fr.ailurus.vaultfamily.ui.viewmodel.VaultViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    val DEBUG = false
 
     private val vaultRepository by lazy {
         VaultRepositoryImpl(applicationContext)
@@ -25,50 +28,57 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        deleteDatabase("secure-vaultfamily-db")
-
-        val passwordChars = "password-personnel".toCharArray()
-        val passphrase = java.nio.charset.Charset.forName("UTF-8")
-            .encode(java.nio.CharBuffer.wrap(passwordChars))
-            .let { byteBuffer ->
-                val bytes = ByteArray(byteBuffer.remaining())
-                byteBuffer.get(bytes)
-                bytes
-            }
-
-        System.loadLibrary("sqlcipher")
-
-        vaultRepository.initializeDb(passphrase)
-
         enableEdgeToEdge()
+
         setContent {
             VaultFamilyTheme {
                 MainScreen(viewModel = vaultViewModel)
             }
         }
 
-        // --- SECTION DE TEST : Insérer des données au démarrage ---
-        // (À commenter ou supprimer une fois que l'app est fonctionnelle)
+        // 2. INIT LOURDE ENSUITE : Sur un thread d'arrière-plan (IO)
+        lifecycleScope.launch(Dispatchers.IO) {
 
-        // 2. CORRECTION : Comment appeler saveGroup
-        // On fournit le nom et la clé secrète sous forme de ByteArray
-        vaultViewModel.saveGroup(Group(groupName = "famille"), secret = GroupSecret(
-            groupKey = "secret-famille".toByteArray()
-        ))
-        vaultViewModel.saveGroup(Group(groupName = "travail"), secret = GroupSecret(
-            groupKey = "secret-travail".toByteArray()
-        ))
+            if (DEBUG) {
+                deleteDatabase("secure-vaultfamily-db")
+            }
 
-        // 3. CORRECTION : Comment appeler saveEntry
+            // Calculs CPU
+            val passwordChars = "password-personnel".toCharArray()
+            val passphrase = String(passwordChars).toByteArray(Charsets.UTF_8)
+
+            // Chargement Lib
+            System.loadLibrary("sqlcipher")
+
+            // Ouverture DB (Lent - PBKDF2)
+            vaultRepository.initializeDb(passphrase)
+
+            // 3. DEBUG DATA : On insère uniquement une fois la DB prête
+            // Doit être fait ici pour garantir l'ordre séquentiel
+            if (DEBUG) {
+                insertDebugData()
+            }
+        }
+    }
+
+    private fun insertDebugData() {
+        vaultViewModel.saveGroup(
+            Group(groupName = "famille"), secret = GroupSecret(
+                groupKey = "secret-famille".toByteArray()
+            )
+        )
+        vaultViewModel.saveGroup(
+            Group(groupName = "travail"), secret = GroupSecret(
+                groupKey = "secret-travail".toByteArray()
+            )
+        )
+
         vaultViewModel.saveEntry(
-            // L'ID du groupe doit correspondre à un groupe existant.
             entry = Entry(
                 entrySite = "google.com",
                 entryUser = "franck",
-                groupId = 1 // IMPORTANT: L'ID du groupe "self" (inséré lors de la création de la db)
+                groupId = 1
             ),
-            // Le secret doit être un objet EntrySecret
             secret = EntrySecret(
                 encryptedPassword = "password-google".toByteArray()
             )
@@ -78,7 +88,7 @@ class MainActivity : ComponentActivity() {
             entry = Entry(
                 entrySite = "amazon.fr",
                 entryUser = "ailurus",
-                groupId = 2 // IMPORTANT: L'ID du groupe "famille"
+                groupId = 2
             ),
             secret = EntrySecret(
                 encryptedPassword = "password-amazon".toByteArray()

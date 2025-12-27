@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import fr.ailurus.vaultfamily.ui.theme.VaultFamilyTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.text.style.TextAlign
-import fr.ailurus.vaultfamily.data.model.Entry
+import fr.ailurus.vaultfamily.data.model.*
 
 @Composable
-fun EntryDisplay(entry: Entry) {
+fun EntryDisplay(entry: Entry, groups: List<Group>) {
     Card (
         modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
     ) {
@@ -52,24 +52,10 @@ fun EntryDisplay(entry: Entry) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "none temporary", // TODO recuperer le label
+                    text = groups.find { it.groupId == entry.groupId }?.groupName ?: "Error",
                     textAlign = TextAlign.Center
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EntryDisplayPreview(){
-    VaultFamilyTheme {
-        EntryDisplay(
-            Entry(
-                entrySite = "google.com/login",
-                entryUser = "example@gmail.com",
-                groupId = 0
-            )
-        )
     }
 }
