@@ -11,7 +11,10 @@
       <SelectionState runConfigName="MainScreenPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="VaultRepositoryTest">
+      <SelectionState runConfigName="AuthScreenPreviewFirst">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="AuthScreenPreviewOther">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
