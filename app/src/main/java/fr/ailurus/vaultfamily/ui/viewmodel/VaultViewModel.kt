@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.ailurus.vaultfamily.data.model.*
+import fr.ailurus.vaultfamily.data.model.uistate.VaultUiState
 import fr.ailurus.vaultfamily.data.repository.VaultRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,13 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-data class VaultUiState(
-    val entries: List<Entry> = emptyList(),
-    val groups: List<Group> = emptyList(),
-    val searchQuery: String = "",
-    val groupQuery: Long = 0L
-)
 
 class VaultViewModel(private val repository: VaultRepository) : ViewModel() {
 
