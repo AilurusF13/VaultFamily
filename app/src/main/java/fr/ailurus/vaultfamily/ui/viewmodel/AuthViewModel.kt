@@ -6,41 +6,49 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.ailurus.vaultfamily.data.model.uistate.AuthUiState
+import fr.ailurus.vaultfamily.data.repository.AppDatabase
 import fr.ailurus.vaultfamily.domain.auth.AuthManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val authManager: AuthManager) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        AuthUiState(firstAuth = !authManager.isVaultInitalized())
-    )
+    // Tes inputs bruts
+    private val _password = MutableStateFlow("")
+    private val _confirm = MutableStateFlow("")
+    private val _asyncError = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    fun onPasswordChange(newPassword: String){
-        _uiState.update { it.copy(password = newPassword) }
-    }
-
-    fun onConfirmChange(newConfirm: String){
-        _uiState.update { it.copy(confirm = newConfirm) }
-        if (_uiState.value.password != newConfirm){
-            errorConfirm()
+    // La réactivité pure avec combine
+    val uiState: StateFlow<AuthUiState> = combine(_password, _confirm, _asyncError) { p, c, err ->
+        val validationError = when {
+            c.isNotEmpty() && p != c -> "Les mots de passe ne correspondent pas"
+            else -> err
         }
+
+        AuthUiState(
+            password = p,
+            confirm = c,
+            error = validationError ?: "",
+            firstAuth = !authManager.isVaultInitalized()
+        )
+    }.stateIn(viewModelScope, SharingStarted.Lazily, AuthUiState(
+        firstAuth = authManager.isVaultInitalized()
+    ))
+
+    fun onPasswordChange(newPassword: String) {
+        _password.value = newPassword
+        _asyncError.value = null // Reset l'erreur de l'AuthManager quand on tape
     }
 
-    fun errorConfirm(){
-        _uiState.update { it.copy(
-            error = "Les mots de passe ne correspondent pas"
-        )}
-    }
-
-    fun isErrorEmpty(): Boolean{
-        return _uiState.value.error.isEmpty()
+    fun onConfirmChange(newConfirm: String) {
+        _confirm.value = newConfirm
     }
 
     private var _authJob: Job? = null // empeche de faire l action plusieurs fois avant la fin de la premeire
@@ -49,21 +57,27 @@ class AuthViewModel(private val authManager: AuthManager) : ViewModel() {
 
         if (_authJob?.isActive == true) return
 
-        val passwordBytes = _uiState.value.password.toByteArray()
+        val passwordBytes = uiState.value.password.toByteArray()
 
         _authJob = viewModelScope.launch {
+
+            AppDatabase.clearInstance()
             operation(passwordBytes)
                 .onSuccess {
                     authManager.accessVault()
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(error = e.message ?: "Erreur inconnue") }
+                    _asyncError.update { e.message ?: "Erreure inconnue" }
                 }
         }
     }
 
     fun tryLogin() = tryOp { authManager.loginVault(it) }
     fun trySetup() = tryOp { authManager.setupVault(it) }
+
+    fun deleteDb(){
+        authManager.deleteDb()
+    }
 
     companion object {
         fun Factory(authManager: AuthManager): ViewModelProvider.Factory = viewModelFactory {

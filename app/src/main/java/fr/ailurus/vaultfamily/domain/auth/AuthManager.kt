@@ -7,6 +7,8 @@ interface AuthManager {
      */
     fun isVaultInitalized(): Boolean
 
+    fun deleteDb()
+
     /**
      * Initalise la db
      */
@@ -20,5 +22,5 @@ interface AuthManager {
     /**
      *
      */
-    suspend fun accessVault()
+    fun accessVault()
 }

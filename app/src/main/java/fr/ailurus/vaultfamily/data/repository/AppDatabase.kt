@@ -52,5 +52,12 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
+
+        fun clearInstance() {
+            synchronized(this) {
+                INSTANCE?.close() // On ferme la connexion proprement
+                INSTANCE = null   // On efface la référence pour forcer une recréation
+            }
+        }
     }
 }

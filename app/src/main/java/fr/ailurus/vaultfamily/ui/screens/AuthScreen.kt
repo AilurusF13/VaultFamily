@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,55 +25,66 @@ import fr.ailurus.vaultfamily.ui.viewmodel.AuthViewModel
 fun AuthScreen(viewModel: AuthViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Champ Mot de Passe
-        OutlinedTextField(
-            value = uiState.password,
-            onValueChange = { viewModel.onPasswordChange(it) },
-            label = { Text("Mot de passe") },
-            visualTransformation = PasswordVisualTransformation(), // Masque les caractères
-            isError = uiState.error.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        if (uiState.firstAuth) {
-            Spacer(modifier = Modifier.height(8.dp))
-            // Champ Confirmation
+    Surface {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Champ Mot de Passe
             OutlinedTextField(
-                value = uiState.confirm,
-                onValueChange = { viewModel.onConfirmChange(it) },
-                label = { Text("Confirmer le mot de passe") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = uiState.error.contains("correspondent pas"),
+                value = uiState.password,
+                onValueChange = { viewModel.onPasswordChange(it) },
+                label = { Text("Mot de passe") },
+                visualTransformation = PasswordVisualTransformation(), // Masque les caractères
+                isError = uiState.error.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             )
-        }
 
-        // Zone d'erreur dédiée
-        if (uiState.error.isNotEmpty()) {
-            Text(
-                text = uiState.error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
+            if (uiState.firstAuth) {
+                Spacer(modifier = Modifier.height(8.dp))
+                // Champ Confirmation
+                OutlinedTextField(
+                    value = uiState.confirm,
+                    onValueChange = { viewModel.onConfirmChange(it) },
+                    label = { Text("Confirmer le mot de passe") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    isError = uiState.error.contains("correspondent pas"),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            // Zone d'erreur dédiée
+            if (uiState.error.isNotEmpty()) {
+                Text(
+                    text = uiState.error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
-        // Bouton de validation
-        Button(
-            onClick = {
-                if (uiState.firstAuth) viewModel.trySetup() else viewModel.tryLogin()
-            },
-            enabled = uiState.password.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-                Text(if (uiState.firstAuth) "Initialiser le coffre" else "Déverrouiller")
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Bouton de validation
+            Button(
+                onClick = {
+                    if (uiState.firstAuth) viewModel.trySetup() else viewModel.tryLogin()
+                },
+                enabled = uiState.error.isEmpty() && uiState.password.isNotEmpty(),
+                // TODO confirm ne doit pas etre vite si on est sur une seconde authenntificaiton
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                    Text(if (uiState.firstAuth) "Initialiser le coffre" else "Déverrouiller")
+            }
+
+            Button(
+                onClick = {
+                    viewModel.deleteDb()
+                }
+            ){
+                Text("Supprimer la base de donnée (déboggage)")
+            }
         }
     }
 }

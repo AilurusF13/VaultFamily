@@ -9,8 +9,10 @@ class VaultRepositoryImpl(
 ) : VaultRepository {
 
     private var _db: AppDatabase? = null
-    fun initializeDb(context: Context, passphrase: ByteArray) {
+
+    override suspend fun initializeDb(context: Context, passphrase: ByteArray) {
         _db = AppDatabase.getInstance(context, passphrase)
+        database.openHelper.writableDatabase
     }
     val database: AppDatabase
         get() = _db ?: throw IllegalStateException("Database not accessible")

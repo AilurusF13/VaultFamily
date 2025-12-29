@@ -1,9 +1,12 @@
 package fr.ailurus.vaultfamily.data.repository
 
+import android.content.Context
 import fr.ailurus.vaultfamily.data.model.*
 import kotlinx.coroutines.flow.Flow
 
 interface VaultRepository {
+
+    suspend fun initializeDb(context: Context, passphrase: ByteArray)
 
     // ENTRY EDITING
     fun getAllEntries(): Flow<List<Entry>>

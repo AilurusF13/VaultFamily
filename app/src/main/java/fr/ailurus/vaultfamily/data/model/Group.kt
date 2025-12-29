@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class Group (
     @PrimaryKey(autoGenerate = true)
     val groupId: Long = 0,
-    val groupName: String = "self"
+    val groupName: String
 )
