@@ -10,10 +10,15 @@ interface AuthManager {
     /**
      * Initalise la db
      */
-    fun setupVault(passphrase: ByteArray): Result<Unit>
+    suspend fun setupVault(passphrase: ByteArray): Result<Unit>
 
     /**
-     * Unlock la db et l'ouvre
+     * essaie de unlock la db et l'ouvre
      */
-    fun loginVault(passphrase: ByteArray): Result<Unit>
+    suspend fun loginVault(passphrase: ByteArray): Result<Unit>
+
+    /**
+     *
+     */
+    suspend fun accessVault()
 }
