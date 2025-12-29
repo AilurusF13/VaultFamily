@@ -53,27 +53,32 @@ class AuthViewModel(private val authManager: AuthManager) : ViewModel() {
 
     private var _authJob: Job? = null // empeche de faire l action plusieurs fois avant la fin de la premeire
 
-    private fun tryOp(operation: suspend (ByteArray) -> Result<Unit>) {
+    private fun tryOp(operation: suspend (ByteArray) -> Result<Unit>): Boolean {
 
-        if (_authJob?.isActive == true) return
+        if (_authJob?.isActive == true) return false
 
         val passwordBytes = uiState.value.password.toByteArray()
+
+        var res = false
 
         _authJob = viewModelScope.launch {
 
             AppDatabase.clearInstance()
             operation(passwordBytes)
                 .onSuccess {
-                    authManager.accessVault()
+                    res = true
                 }
                 .onFailure { e ->
-                    _asyncError.update { e.message ?: "Erreure inconnue" }
+                    _asyncError.update { "Mot de passe erroné" }
+                    // TODO en attendant un fix e.message ou mot de passe éroné
+                    res = false
                 }
         }
+        return res
     }
 
-    fun tryLogin() = tryOp { authManager.loginVault(it) }
-    fun trySetup() = tryOp { authManager.setupVault(it) }
+    fun tryLogin(): Boolean = tryOp { authManager.loginVault(it) }
+    fun trySetup(): Boolean = tryOp { authManager.setupVault(it) }
 
     fun deleteDb(){
         authManager.deleteDb()

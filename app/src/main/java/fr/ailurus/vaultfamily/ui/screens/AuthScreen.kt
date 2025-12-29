@@ -22,7 +22,10 @@ import androidx.compose.ui.unit.dp
 import fr.ailurus.vaultfamily.ui.viewmodel.AuthViewModel
 
 @Composable
-fun AuthScreen(viewModel: AuthViewModel) {
+fun AuthScreen(
+    viewModel: AuthViewModel,
+    onAuthSuccess: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     Surface {
@@ -49,7 +52,7 @@ fun AuthScreen(viewModel: AuthViewModel) {
                     onValueChange = { viewModel.onConfirmChange(it) },
                     label = { Text("Confirmer le mot de passe") },
                     visualTransformation = PasswordVisualTransformation(),
-                    isError = uiState.error.contains("correspondent pas"),
+                    isError = uiState.error.isNotEmpty(),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -69,10 +72,18 @@ fun AuthScreen(viewModel: AuthViewModel) {
             // Bouton de validation
             Button(
                 onClick = {
-                    if (uiState.firstAuth) viewModel.trySetup() else viewModel.tryLogin()
+                    var res: Boolean = false
+
+                    if (uiState.firstAuth) {
+                        res = viewModel.trySetup()
+                    } else {
+                        res = viewModel.tryLogin()
+                    }
+                    if (res) onAuthSuccess()
+
                 },
                 enabled = uiState.error.isEmpty() && uiState.password.isNotEmpty(),
-                // TODO confirm ne doit pas etre vite si on est sur une seconde authenntificaiton
+                // TODO confirm ne doit pas etre vide si on est sur une seconde authenntificaiton
                 modifier = Modifier.fillMaxWidth()
             ) {
                     Text(if (uiState.firstAuth) "Initialiser le coffre" else "Déverrouiller")

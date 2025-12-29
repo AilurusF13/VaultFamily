@@ -69,6 +69,7 @@ dependencies {
     // implementation(libs.androidx.room.runtime) // Ajouté pour la stabilité
     implementation(libs.android.database.sqlcipher)
     implementation(libs.androidx.sqlite.ktx)
+    implementation(libs.androidx.navigation.compose)
 
     // 2. DÉCOMMENTÉ & CORRIGÉ :
     // Utilise add("ksp", ...) pour éviter l'erreur rouge tant que le plugin charge

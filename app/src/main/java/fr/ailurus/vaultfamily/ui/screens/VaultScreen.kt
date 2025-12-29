@@ -43,7 +43,7 @@ import fr.ailurus.vaultfamily.ui.components.EntryDisplay
 import fr.ailurus.vaultfamily.ui.viewmodel.VaultViewModel
 
 @Composable
-fun MainScreen(viewModel: VaultViewModel) {
+fun VaultScreen(viewModel: VaultViewModel) {
     var showAddDialog by remember { mutableStateOf(false) }
     var editEntry by remember { mutableStateOf(Entry())}
 

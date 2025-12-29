@@ -14,7 +14,8 @@ runtime = "1.7.5"
 sqlcipher = "4.6.1" # Version critique pour Android 15 (16KB page align)
 sqliteKtx = "2.4.0"
 roomKtx = "2.6.1" # Dernière version stable réelle de Room
-ksp = "2.0.21-1.0.27" # Doit correspondre exactement à Kotlin 2.0.21
+ksp = "2.0.21-1.0.27"
+navigationCompose = "2.9.6" # Doit correspondre exactement à Kotlin 2.0.21
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomKtx" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

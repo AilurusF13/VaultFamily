@@ -1,7 +1,6 @@
 package fr.ailurus.vaultfamily.domain.auth
 
 import android.content.Context
-import fr.ailurus.vaultfamily.data.repository.AppDatabase
 import fr.ailurus.vaultfamily.data.repository.VaultRepository
 
 class AuthManagerImpl(
@@ -9,15 +8,9 @@ class AuthManagerImpl(
     private val vaultRepository: VaultRepository
 ): AuthManager {
 
-//    override fun isVaultInitalized(): Boolean {
-//        return context.getDatabasePath("secure-vaultfamily-db").exists()
-//    }
     override fun isVaultInitalized(): Boolean {
         System.loadLibrary("sqlcipher")
-        val dbPath = context.getDatabasePath("secure-vaultfamily-db")
-        val list = dbPath.parentFile?.list() ?: emptyArray()
-        println("Fichiers présents dans le dossier : ${list.joinToString()}")
-        return dbPath.exists()
+        return context.getDatabasePath("secure-vaultfamily-db").exists()
     }
 
     override fun deleteDb(){
@@ -27,7 +20,6 @@ class AuthManagerImpl(
     // TODO Amélioration : utiliser un salt
 
     override suspend fun setupVault(passphrase: ByteArray): Result<Unit> {
-        println("J essaie de setup le vault")
         return try {
             deleteDb()
 
