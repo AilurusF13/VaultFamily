@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import fr.ailurus.vaultfamily.data.model.*
 import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
 import fr.ailurus.vaultfamily.ui.components.EntryDisplay
@@ -61,6 +63,73 @@ fun VaultScreen(viewModel: VaultViewModel) {
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Ajouter")
             }
+        },
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+            ) {
+
+                var searchQuery by remember { mutableStateOf("") }
+                val focusRequester = remember { FocusRequester() }
+                val keyboardController = LocalSoftwareKeyboardController.current
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus() // Donne le focus au champ
+                    keyboardController?.show()    // Force l'ouverture du clavier
+                }
+
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    value = searchQuery,
+                    onValueChange = { newQuery ->
+                        searchQuery = newQuery
+                        viewModel.onSearchQueryChange(searchQuery)
+                    },
+                    singleLine = true,
+                    leadingIcon =  {
+                        Icon( Icons.Default.Search, "Rechercher")
+                    },
+                    placeholder = {
+                        Text("Rechercher")
+                    },
+                )
+
+                // group filter => filter chip
+                // ! il faut avoir une liste de group dans le vault afin que ce soit foncitonnel
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(groups) { g ->
+                        FilterChip(
+                            onClick = {
+                                if (uiState.groupQuery == g.groupId) {
+                                    viewModel.onGroupQueryChange(0)
+                                } else {
+                                    viewModel.onGroupQueryChange(g.groupId)
+                                }
+                            },
+                            selected = uiState.groupQuery == g.groupId,
+                            label = {
+                                Text(text = g.groupName)
+                            },
+                            leadingIcon = if (uiState.groupQuery == g.groupId) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Filled.Done,
+                                        contentDescription = "Done icon",
+                                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
 
@@ -69,64 +138,7 @@ fun VaultScreen(viewModel: VaultViewModel) {
                 .fillMaxWidth()
                 .padding(innerPadding)
         ) {
-            var searchQuery by remember { mutableStateOf("") }
-            val focusRequester = remember { FocusRequester() }
-            val keyboardController = LocalSoftwareKeyboardController.current
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus() // Donne le focus au champ
-                keyboardController?.show()    // Force l'ouverture du clavier
-            }
 
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-                value = searchQuery,
-                onValueChange = { newQuery ->
-                    searchQuery = newQuery
-                    viewModel.onSearchQueryChange(searchQuery)
-                },
-                singleLine = true,
-                leadingIcon =  {
-                    Icon( Icons.Default.Search, "Rechercher")
-                },
-                placeholder = {
-                    Text("Rechercher")
-                },
-            )
-
-            // group filter => filter chip
-            // ! il faut avoir une liste de group dans le vault afin que ce soit foncitonnel
-            LazyRow(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(groups) { g ->
-                    FilterChip(
-                        onClick = {
-                            if (uiState.groupQuery == g.groupId) {
-                                viewModel.onGroupQueryChange(0)
-                            } else {
-                                viewModel.onGroupQueryChange(g.groupId)
-                            }
-                        },
-                        selected = uiState.groupQuery == g.groupId,
-                        label = {
-                            Text(text = g.groupName)
-                        },
-                        leadingIcon = if (uiState.groupQuery == g.groupId) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Filled.Done,
-                                    contentDescription = "Done icon",
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                )
-                            }
-                        } else {
-                            null
-                        },
-                    )
-                }
-            }
             EntriesDisplay(
                 entries = entries,
                 groups = groups,
