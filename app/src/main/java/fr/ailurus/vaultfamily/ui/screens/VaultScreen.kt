@@ -19,10 +19,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,6 +54,8 @@ fun VaultScreen(viewModel: VaultViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val entries = uiState.entries
     val groups = uiState.groups
+
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold (
         floatingActionButton = {
@@ -95,6 +99,18 @@ fun VaultScreen(viewModel: VaultViewModel) {
                     placeholder = {
                         Text("Rechercher")
                     },
+                    trailingIcon = {
+                        IconButton (
+                            onClick = {
+                                android.widget.Toast.makeText(context, "Syncro Lancée !", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        ){
+                            Icon(
+                                Icons.Default.Sync,
+                                "Syncroniser"
+                            )
+                        }
+                    }
                 )
 
                 // group filter => filter chip
