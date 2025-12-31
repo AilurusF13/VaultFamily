@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "fr.ailurus.vaultfamily"
-    compileSdk = 35 // 36 est trop instable, 35 suffit largement
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "fr.ailurus.vaultfamily"
@@ -66,13 +66,10 @@ dependencies {
 
     // ROOM & SQLCIPHER
     implementation(libs.androidx.room.ktx)
-    // implementation(libs.androidx.room.runtime) // Ajouté pour la stabilité
     implementation(libs.android.database.sqlcipher)
     implementation(libs.androidx.sqlite.ktx)
     implementation(libs.androidx.navigation.compose)
 
-    // 2. DÉCOMMENTÉ & CORRIGÉ :
-    // Utilise add("ksp", ...) pour éviter l'erreur rouge tant que le plugin charge
     add("ksp", libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
@@ -82,4 +79,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation("io.ktor:ktor-network:2.3.12")
+    implementation("io.ktor:ktor-utils:2.3.12")
 }
