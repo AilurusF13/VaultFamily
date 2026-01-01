@@ -68,7 +68,7 @@ class AuthViewModel(private val authManager: AuthManager) : ViewModel() {
                 .onSuccess {
                     res = true
                 }
-                .onFailure { e ->
+                .onFailure {
                     _asyncError.update { "Mot de passe erroné" }
                     // TODO en attendant un fix e.message ou mot de passe éroné
                     res = false

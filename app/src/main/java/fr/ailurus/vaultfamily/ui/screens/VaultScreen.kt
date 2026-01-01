@@ -7,8 +7,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.captionBarPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -27,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.ailurus.vaultfamily.data.model.*
 import fr.ailurus.vaultfamily.ui.components.EditEntryDialog
@@ -57,6 +62,18 @@ fun VaultScreen(viewModel: VaultViewModel) {
 
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    // Dans VaultScreen
+    val ips by viewModel.ips.collectAsState()
+    val deviceCount = ips.size
+
+    val lastMessage by viewModel.lastMessage.collectAsState()
+    // Dès que 'lastMessage' change de valeur, le bloc à l'intérieur est exécuté
+    LaunchedEffect(lastMessage) {
+        if (lastMessage != "Aucun message") { // On évite le toast au premier lancement
+            android.widget.Toast.makeText(context, lastMessage, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Scaffold (
         floatingActionButton = {
             FloatingActionButton(
@@ -68,46 +85,45 @@ fun VaultScreen(viewModel: VaultViewModel) {
                 Icon(Icons.Default.Add, contentDescription = "Ajouter")
             }
         },
+        bottomBar = {
+            Surface {
+                Box(
+                    Modifier
+                        .navigationBarsPadding()
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+
+                ){
+                    Text(lastMessage)
+                }
+            }
+        },
         topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
             ) {
-
-                var searchQuery by remember { mutableStateOf("") }
                 val focusRequester = remember { FocusRequester() }
-                val keyboardController = LocalSoftwareKeyboardController.current
-                LaunchedEffect(Unit) {
-                    focusRequester.requestFocus() // Donne le focus au champ
-                    keyboardController?.show()    // Force l'ouverture du clavier
-                }
+                val ips by viewModel.ips.collectAsState()
 
                 OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
-                    value = searchQuery,
-                    onValueChange = { newQuery ->
-                        searchQuery = newQuery
-                        viewModel.onSearchQueryChange(searchQuery)
-                    },
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    value = uiState.searchQuery, // Utilise le state du ViewModel
+                    onValueChange = { viewModel.onSearchQueryChange(it) },
                     singleLine = true,
-                    leadingIcon =  {
-                        Icon( Icons.Default.Search, "Rechercher")
-                    },
-                    placeholder = {
-                        Text("Rechercher")
-                    },
+                    leadingIcon = { Icon(Icons.Default.Search, "Rechercher") },
+                    placeholder = { Text("Rechercher dans le coffre") },
                     trailingIcon = {
-                        IconButton (
-                            onClick = {
-                                android.widget.Toast.makeText(context, "Syncro Lancée !", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        ){
+                        IconButton(onClick = {
+                            val data = "Hello from ${android.os.Build.MODEL}".toByteArray()
+                            viewModel.trySync(data)
+                        }) {
+                            // Changement de couleur si des gens sont connectés
                             Icon(
                                 Icons.Default.Sync,
-                                "Syncroniser"
+                                contentDescription = "Sync",
+                                tint = if (ips.isNotEmpty()) androidx.compose.ui.graphics.Color(0xFF4CAF50) else androidx.compose.ui.graphics.Color.Gray
                             )
                         }
                     }

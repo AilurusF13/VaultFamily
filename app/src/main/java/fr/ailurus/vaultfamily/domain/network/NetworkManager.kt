@@ -1,5 +1,6 @@
 package fr.ailurus.vaultfamily.domain.network
 
+import fr.ailurus.vaultfamily.data.network.DiscoveryManager
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
@@ -19,7 +20,7 @@ class NetworkManager {
 
     suspend fun startServer(port: Int, onMessageReceived: (ByteArray) -> Unit){
         withContext(Dispatchers.IO) {
-            serverSocket = aSocket(selectorManager).tcp().bind("0, 0, 0, 0", port)
+            serverSocket = aSocket(selectorManager).tcp().bind("0.0.0.0", port)
 
             while (true){
                 val socket = serverSocket?.accept() ?: break;
